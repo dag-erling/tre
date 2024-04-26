@@ -209,9 +209,76 @@ tre_do_print(FILE *stream, tre_ast_node_t *ast, int indent)
 }
 
 static void
+tre_do_re(FILE *stream, tre_ast_node_t *ast)
+{
+  int code_min, code_max;
+  tre_literal_t *lit;
+  tre_iteration_t *iter;
+
+  switch (ast->type) {
+  case LITERAL:
+    lit = ast->obj;
+    code_min = lit->code_min;
+    code_max = lit->code_max;
+    if (IS_EMPTY(lit)) {
+      /* nothing */
+    } else if (IS_ASSERTION(lit)) {
+      int i;
+      char *assertions[] = { "^", "$", "ctype", "!ctype",
+			     "\\<", "\\>", "wb", "!wb" };
+      for (i = 0; (1 << i) <= ASSERT_LAST; i++)
+	if (code_max & (1 << i))
+	  fprintf(stream, "%s", assertions[i]);
+    } else if (IS_TAG(lit)) {
+      fprintf(stream, "tag %d\n", code_max);
+    } else if (IS_BACKREF(lit)) {
+      /* nothing */
+    } else if (IS_PARAMETER(lit)) {
+      /* nothing */
+    } else {
+      if (code_min == code_max)
+	fprintf(stream, "%c", code_min);
+      else
+	fprintf(stream, "[%c-%c]", code_min, code_max);
+    }
+    break;
+  case ITERATION:
+    iter = ast->obj;
+    fprintf(stream, "(");
+    tre_do_re(stream, iter->arg);
+    fprintf(stream, ")");
+    if (iter->min == 0 && iter->max == 1)
+      fprintf(stream, "?");
+    else if (iter->min == 0 && iter->max == -1)
+      fprintf(stream, "*");
+    else if (iter->min == 1 && iter->max == -1)
+      fprintf(stream, "+");
+    else
+      fprintf(stream, "{%d,%d}", iter->min, iter->max);
+    break;
+  case UNION:
+    fprintf(stream, "(");
+    tre_do_re(stream, ((tre_union_t *)ast->obj)->left);
+    fprintf(stream, "|");
+    tre_do_re(stream, ((tre_union_t *)ast->obj)->right);
+    fprintf(stream, ")");
+    break;
+  case CATENATION:
+    tre_do_re(stream, ((tre_catenation_t *)ast->obj)->left);
+    tre_do_re(stream, ((tre_catenation_t *)ast->obj)->right);
+    break;
+  default:
+    assert(0);
+    break;
+  }
+}
+
+static void
 tre_ast_fprint(FILE *stream, tre_ast_node_t *ast)
 {
   tre_do_print(stream, ast, 0);
+  tre_do_re(stream, ast);
+  printf("\n");
 }
 
 void

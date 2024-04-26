@@ -1723,10 +1723,10 @@ tre_make_trans(tre_pos_and_tags_t *p1, tre_pos_and_tags_t *p2,
 	    {
 	      int *tags;
 
-	      DPRINT(("	 %2d -> %2d on %3d", p1->position, p2->position,
+	      DPRINT(("	 %2d -> %2d on '%c'", p1->position, p2->position,
 		      p1->code_min));
 	      if (p1->code_max != p1->code_min)
-		DPRINT(("-%3d", p1->code_max));
+		DPRINT(("-'%c'", p1->code_max));
 	      tags = trans->tags;
 	      if (tags)
 		{

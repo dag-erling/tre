@@ -3,7 +3,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS = agrep
 
-check_PROGRAMS = retest randtest test-str-source
+check_PROGRAMS = retest randtest test-str-source axy
 EXTRA_PROGRAMS = bench
 LDADD = $(LTLIBINTL)
 
@@ -68,3 +68,7 @@ TESTS = test-str-source retest
 if TRE_MULTIBYTE
 TESTS += wretest
 endif TRE_MULTIBYTE
+
+axy_SOURCES = axy.c
+axy_CPPFLAGS = $(retest_CPPFLAGS)
+axy_LDADD = $(retest_LDADD)
