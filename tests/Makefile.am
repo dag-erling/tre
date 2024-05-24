@@ -68,3 +68,8 @@ TESTS = test-str-source retest
 if TRE_MULTIBYTE
 TESTS += wretest
 endif TRE_MULTIBYTE
+
+check_PROGRAMS += axy
+axy_SOURCES = axy.c
+axy_CPPFLAGS = $(retest_CPPFLAGS)
+axy_LDADD = $(retest_LDADD)
