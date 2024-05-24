@@ -826,8 +826,6 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
       if (status != REG_OK)
 	break;
 
-      DPRINT(("pos_add %d\n", pos_add));
-
       symbol = (tre_expand_ast_symbol_t)tre_stack_pop_int(stack);
       node = tre_stack_pop_voidptr(stack);
       switch (symbol)
@@ -878,7 +876,6 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
 		if (iter->min > 1 || iter->max > 1)
 		  pos_add = 0;
 		iter_depth++;
-		DPRINT(("iter\n"));
 		break;
 	      }
 	    default:
@@ -906,7 +903,6 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
 		    int flags = ((j + 1 < iter->min)
 				 ? COPY_REMOVE_TAGS
 				 : COPY_MAXIMIZE_FIRST_TAG);
-		    DPRINT(("  pos_add %d\n", pos_add));
 		    pos_add_save = pos_add;
 		    status = tre_copy_ast(mem, stack, iter->arg, flags,
 					  &pos_add, tag_directions, &copy,
@@ -1723,10 +1719,10 @@ tre_make_trans(tre_pos_and_tags_t *p1, tre_pos_and_tags_t *p2,
 	    {
 	      int *tags;
 
-	      DPRINT(("	 %2d -> %2d on %3d", p1->position, p2->position,
+	      DPRINT(("	 %2d -> %2d on '%c'", p1->position, p2->position,
 		      p1->code_min));
 	      if (p1->code_max != p1->code_min)
-		DPRINT(("-%3d", p1->code_max));
+		DPRINT(("-'%c'", p1->code_max));
 	      tags = trans->tags;
 	      if (tags)
 		{
