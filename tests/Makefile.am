@@ -68,3 +68,8 @@ TESTS = test-str-source retest
 if TRE_MULTIBYTE
 TESTS += wretest
 endif TRE_MULTIBYTE
+
+check_PROGRAMS += bore
+bore_SOURCES = bore.c
+bore_CPPFLAGS = $(retest_CPPFLAGS)
+bore_LDADD = $(retest_LDADD)
