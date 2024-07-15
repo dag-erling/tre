@@ -55,13 +55,14 @@ tre_add_tag_left(tre_mem_t mem, tre_ast_node_t *node, int tag_id)
 
   c->right->obj = node->obj;
   c->right->type = node->type;
-  c->right->nullable = -1;
+  c->right->nullable = node->nullable;
   c->right->submatch_id = -1;
   c->right->firstpos = NULL;
   c->right->lastpos = NULL;
   c->right->num_tags = 0;
   node->obj = c;
   node->type = CATENATION;
+  node->nullable = c->left->nullable && c->right->nullable;
   return REG_OK;
 }
 
@@ -87,13 +88,14 @@ tre_add_tag_right(tre_mem_t mem, tre_ast_node_t *node, int tag_id)
 
   c->left->obj = node->obj;
   c->left->type = node->type;
-  c->left->nullable = -1;
+  c->left->nullable = node->nullable;
   c->left->submatch_id = -1;
   c->left->firstpos = NULL;
   c->left->lastpos = NULL;
   c->left->num_tags = 0;
   node->obj = c;
   node->type = CATENATION;
+  node->nullable = c->left->nullable && c->right->nullable;
   return REG_OK;
 }
 
@@ -999,6 +1001,7 @@ tre_expand_ast(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *ast,
 		if (!node_copy)
 		  return REG_ESPACE;
 		node_copy->obj = node->obj;
+		node_copy->nullable = node->nullable;
 		tmp_node = tre_ast_new_catenation(mem, tmp_l, node_copy);
 		if (!tmp_node)
 		  return REG_ESPACE;
@@ -1334,7 +1337,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		  {
 		    /* Back references: nullable = false, firstpos = {i},
 		       lastpos = {i}. */
-		    node->nullable = 0;
+		    assert(node->nullable == 0);
 		    node->firstpos = tre_set_one(mem, lit->position, 0,
 					     TRE_CHAR_MAX, 0, NULL, -1);
 		    if (!node->firstpos)
@@ -1349,7 +1352,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		  {
 		    /* Tags, empty strings, params, and zero width assertions:
 		       nullable = true, firstpos = {}, and lastpos = {}. */
-		    node->nullable = 1;
+		    assert(node->nullable == 1);
 		    node->firstpos = tre_set_empty(mem);
 		    if (!node->firstpos)
 		      return REG_ESPACE;
@@ -1361,7 +1364,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 		  {
 		    /* Literal at position i: nullable = false, firstpos = {i},
 		       lastpos = {i}. */
-		    node->nullable = 0;
+		    assert(node->nullable == 0);
 		    node->firstpos =
 		      tre_set_one(mem, lit->position, (int)lit->code_min,
 				  (int)lit->code_max, 0, NULL, -1);
@@ -1414,7 +1417,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 	case NFL_POST_UNION:
 	  {
 	    tre_union_t *uni = (tre_union_t *)node->obj;
-	    node->nullable = uni->left->nullable || uni->right->nullable;
+	    assert(node->nullable == (uni->left->nullable || uni->right->nullable));
 	    node->firstpos = tre_set_union(mem, uni->left->firstpos,
 					   uni->right->firstpos, NULL, 0, NULL);
 	    if (!node->firstpos)
@@ -1430,10 +1433,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 	  {
 	    tre_iteration_t *iter = (tre_iteration_t *)node->obj;
 
-	    if (iter->min == 0 || iter->arg->nullable)
-	      node->nullable = 1;
-	    else
-	      node->nullable = 0;
+	    assert(node->nullable == (iter->min == 0 || iter->arg->nullable));
 	    node->firstpos = iter->arg->firstpos;
 	    node->lastpos = iter->arg->lastpos;
 	    break;
@@ -1445,7 +1445,7 @@ tre_compute_nfl(tre_mem_t mem, tre_stack_t *stack, tre_ast_node_t *tree)
 	    int *params;
 	    reg_errcode_t status;
 	    tre_catenation_t *cat = node->obj;
-	    node->nullable = cat->left->nullable && cat->right->nullable;
+	    assert(node->nullable == (cat->left->nullable && cat->right->nullable));
 
 	    /* Compute firstpos. */
 	    if (cat->left->nullable)

@@ -45,6 +45,7 @@ tre_ast_new_literal(tre_mem_t mem, int code_min, int code_max, int position)
   lit->code_min = code_min;
   lit->code_max = code_max;
   lit->position = position;
+  node->nullable = code_min < 0 && code_min != BACKREF;
 
   return node;
 }
@@ -65,6 +66,7 @@ tre_ast_new_iter(tre_mem_t mem, tre_ast_node_t *arg, int min, int max,
   iter->max = max;
   iter->minimal = minimal;
   node->num_submatches = arg->num_submatches;
+  node->nullable = min == 0 || arg->nullable;
 
   return node;
 }
@@ -80,6 +82,7 @@ tre_ast_new_union(tre_mem_t mem, tre_ast_node_t *left, tre_ast_node_t *right)
   ((tre_union_t *)node->obj)->left = left;
   ((tre_union_t *)node->obj)->right = right;
   node->num_submatches = left->num_submatches + right->num_submatches;
+  node->nullable = left->nullable || right->nullable;
 
   return node;
 }
@@ -96,6 +99,7 @@ tre_ast_new_catenation(tre_mem_t mem, tre_ast_node_t *left,
   ((tre_catenation_t *)node->obj)->left = left;
   ((tre_catenation_t *)node->obj)->right = right;
   node->num_submatches = left->num_submatches + right->num_submatches;
+  node->nullable = left->nullable && right->nullable;
 
   return node;
 }
