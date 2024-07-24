@@ -1832,6 +1832,43 @@ tre_ast_to_tnfa(tre_ast_node_t *node, tre_tnfa_transition_t *transitions,
   return errcode;
 }
 
+static void
+tre_reposition_ast(tre_ast_node_t *node, int *position)
+{
+  switch (node->type)
+    {
+    case LITERAL:
+      {
+	tre_literal_t *lit = node->obj;
+	if (lit->position != -1)
+	  lit->position = (*position)++;
+      }
+      break;
+
+    case UNION:
+      {
+	tre_union_t *uni = node->obj;
+	tre_reposition_ast(uni->left, position);
+	tre_reposition_ast(uni->right, position);
+      }
+      break;
+
+    case CATENATION:
+      {
+	tre_catenation_t *cat = node->obj;
+	tre_reposition_ast(cat->left, position);
+	tre_reposition_ast(cat->right, position);
+      }
+      break;
+
+    case ITERATION:
+      {
+	tre_iteration_t *iter = node->obj;
+	tre_reposition_ast(iter->arg, position);
+      }
+      break;
+    }
+}
 
 #define ERROR_EXIT(err)		  \
   do				  \
@@ -1967,6 +2004,14 @@ tre_compile(regex_t *preg, const tre_char_t *regex, size_t n, int cflags)
 			   tag_directions, &tnfa->params_depth);
   if (errcode != REG_OK)
     ERROR_EXIT(errcode);
+
+  /* XXX recompute all positions */
+  parse_ctx.position = 0;
+  tre_reposition_ast(tree, &parse_ctx.position);
+#ifdef TRE_DEBUG
+  DPRINT(("Repositioned AST:\n"));
+  tre_ast_print(tree);
+#endif
 
   /* Add a dummy node for the final state.
      XXX - For certain patterns this dummy node can be optimized away,
