@@ -70,7 +70,6 @@ char *alloca ();
 #include "tre-internal.h"
 #include "tre-mem.h"
 #include "tre-match-utils.h"
-#include "xmalloc.h"
 
 typedef struct {
   int pos;
@@ -119,7 +118,7 @@ typedef struct tre_backtrack_struct {
 #define tre_bt_mem_new		  tre_mem_new
 #define tre_bt_mem_alloc	  tre_mem_alloc
 #define tre_bt_mem_destroy	  tre_mem_destroy
-#define xafree(obj)		  xfree(obj)
+#define xafree(obj)		  free(obj)
 #endif /* !TRE_USE_ALLOCA */
 
 
@@ -273,7 +272,7 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
 #else /* !TRE_USE_ALLOCA */
   if (tnfa->num_tags)
     {
-      tags = xmalloc(sizeof(*tags) * tnfa->num_tags);
+      tags = malloc(sizeof(*tags) * tnfa->num_tags);
       if (!tags)
 	{
 	  ret = REG_ESPACE;
@@ -282,7 +281,7 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
     }
   if (tnfa->num_submatches)
     {
-      pmatch = xmalloc(sizeof(*pmatch) * tnfa->num_submatches);
+      pmatch = malloc(sizeof(*pmatch) * tnfa->num_submatches);
       if (!pmatch)
 	{
 	  ret = REG_ESPACE;
@@ -291,7 +290,7 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
     }
   if (tnfa->num_states)
     {
-      states_seen = xmalloc(sizeof(*states_seen) * tnfa->num_states);
+      states_seen = malloc(sizeof(*states_seen) * tnfa->num_states);
       if (!states_seen)
 	{
 	  ret = REG_ESPACE;

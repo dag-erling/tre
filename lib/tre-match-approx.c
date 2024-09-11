@@ -46,7 +46,6 @@ char *alloca ();
 
 #include "tre-internal.h"
 #include "tre-match-utils.h"
-#include "xmalloc.h"
 
 #define TRE_M_COST	0
 #define TRE_M_NUM_INS	1
@@ -276,7 +275,7 @@ tre_tnfa_run_approx(const tre_tnfa_t *tnfa, const void *string, int len,
 #ifdef TRE_USE_ALLOCA
     buf = alloca(total_bytes);
 #else /* !TRE_USE_ALLOCA */
-    buf = xmalloc((unsigned)total_bytes);
+    buf = malloc((unsigned)total_bytes);
 #endif /* !TRE_USE_ALLOCA */
     if (!buf)
       return REG_ESPACE;
@@ -795,7 +794,7 @@ tre_tnfa_run_approx(const tre_tnfa_t *tnfa, const void *string, int len,
 
 #ifndef TRE_USE_ALLOCA
   if (buf)
-    xfree(buf);
+    free(buf);
 #endif /* !TRE_USE_ALLOCA */
 
   match->cost = match_costs[TRE_M_COST];

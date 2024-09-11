@@ -47,10 +47,6 @@
 #ifdef TRE_VERSION
 #define HAVE_REGNEXEC 1
 #define HAVE_REGNCOMP 1
-#include "xmalloc.h"
-#else /* !TRE_VERSION */
-#define xmalloc malloc
-#define xfree free
 #endif /* !TRE_VERSION */
 
 #include "tre-internal.h"
@@ -183,7 +179,7 @@ wrap_regexec(const CHAR_T *data, size_t len,
     {
       /* Copy the data to a separate buffer to make a better test for
 	 tre_regexec() and tre_regnexec(). */
-      buf = xmalloc((len + !use_regnexec) * sizeof(CHAR_T));
+      buf = malloc((len + !use_regnexec) * sizeof(CHAR_T));
       if (!buf)
 	return REG_ESPACE;
       memcpy(buf, data, len * sizeof(CHAR_T));
@@ -205,7 +201,7 @@ wrap_regexec(const CHAR_T *data, size_t len,
       result = tre_regexec(&reobj, buf, pmatch_len, pmatch, eflags);
     }
 
-  xfree(buf);
+  free(buf);
   return result;
 }
 
@@ -227,28 +223,7 @@ static int
 execute(const CHAR_T *data, int len, size_t pmatch_len, regmatch_t *pmatch,
 	int eflags)
 {
-#ifdef MALLOC_DEBUGGING
-  int i = 0;
-  int ret;
-
-  while (1)
-    {
-      xmalloc_configure(i);
-      comp_tests++;
-      ret = wrap_regexec(data, len, pmatch_len, pmatch, eflags);
-      if (ret != REG_ESPACE)
-	{
-	  break;
-	}
-#ifdef REGEX_DEBUG
-      xmalloc_dump_leaks();
-#endif /* REGEX_DEBUG */
-      i++;
-    }
-  return ret;
-#else /* !MALLOC_DEBUGGING */
   return wrap_regexec(data, len, pmatch_len, pmatch, eflags);
-#endif /* !MALLOC_DEBUGGING */
 }
 
 static int
@@ -529,30 +504,6 @@ test_comp(const char *re, int flags, int ret)
   regex_pattern = re;
   cflags_global = flags;
 
-#ifdef MALLOC_DEBUGGING
-  xmalloc_configure(-1);
-  if (ret != REG_ESPACE) {
-    static int j = 0;
-    int i = 0;
-    while (1)
-      {
-	xmalloc_configure(i);
-	comp_tests++;
-	if (j++ % 20 == 0)
-	  test_status('.');
-	errcode = wrap_regcomp(&reobj, re, len, flags);
-	if (errcode != REG_ESPACE)
-	  {
-	    test_status('*');
-	    break;
-	  }
-#ifdef REGEX_DEBUG
-	xmalloc_dump_leaks();
-#endif /* REGEX_DEBUG */
-	i++;
-      }
-  } else
-#endif /* !MALLOC_DEBUGGING */
   errcode = wrap_regcomp(&reobj, re, len, flags);
 
 #ifdef WRETEST
@@ -1861,11 +1812,6 @@ main(int argc, char **argv)
   else
     fprintf(output_fd,"All %d tests passed.\n", comp_tests + exec_tests);
 
-
-#ifdef MALLOC_DEBUGGING
-  if (xmalloc_dump_leaks())
-    return 1;
-#endif /* MALLOC_DEBUGGING */
 
   if (NULL != output_fd && stdout != output_fd) {
     fclose(output_fd);

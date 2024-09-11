@@ -21,8 +21,6 @@
 
 #include "tre-internal.h"
 #include "tre-mem.h"
-#include "xmalloc.h"
-
 
 /* Returns a new memory allocator or NULL if out of memory. */
 tre_mem_t
@@ -35,7 +33,7 @@ tre_mem_new_impl(int provided, void *provided_block)
       memset(mem, 0, sizeof(*mem));
     }
   else
-    mem = xcalloc(1, sizeof(*mem));
+    mem = calloc(1, sizeof(*mem));
   if (mem == NULL)
     return NULL;
   return mem;
@@ -50,12 +48,12 @@ tre_mem_destroy(tre_mem_t mem)
 
   while (l != NULL)
     {
-      xfree(l->data);
+      free(l->data);
       tmp = l->next;
-      xfree(l);
+      free(l);
       l = tmp;
     }
-  xfree(mem);
+  free(mem);
 }
 
 
@@ -72,20 +70,6 @@ tre_mem_alloc_impl(tre_mem_t mem, int provided, void *provided_block,
       DPRINT(("tre_mem_alloc: oops, called after failure?!\n"));
       return NULL;
     }
-
-#ifdef MALLOC_DEBUGGING
-  if (!provided)
-    {
-      ptr = xmalloc(1);
-      if (ptr == NULL)
-	{
-	  DPRINT(("tre_mem_alloc: xmalloc forced failure\n"));
-	  mem->failed = 1;
-	  return NULL;
-	}
-      xfree(ptr);
-    }
-#endif /* MALLOC_DEBUGGING */
 
   if (mem->n < size)
     {
@@ -113,16 +97,16 @@ tre_mem_alloc_impl(tre_mem_t mem, int provided, void *provided_block,
 	    block_size = TRE_MEM_BLOCK_SIZE;
 	  DPRINT(("tre_mem_alloc: allocating new %zu byte block\n",
 		  block_size));
-	  l = xmalloc(sizeof(*l));
+	  l = malloc(sizeof(*l));
 	  if (l == NULL)
 	    {
 	      mem->failed = 1;
 	      return NULL;
 	    }
-	  l->data = xmalloc(block_size);
+	  l->data = malloc(block_size);
 	  if (l->data == NULL)
 	    {
-	      xfree(l);
+	      free(l);
 	      mem->failed = 1;
 	      return NULL;
 	    }

@@ -15,11 +15,6 @@
 #include <string.h>
 #include <time.h>
 
-#undef MALLOC_DEBUGGING
-#ifdef MALLOC_DEBUGGING
-#include "xmalloc.h"
-#endif /* MALLOC_DEBUGGING */
-
 #include "tre-internal.h"
 
 #define REGEXP_MAX_LEN 16

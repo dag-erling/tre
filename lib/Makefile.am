@@ -11,8 +11,7 @@ noinst_HEADERS =		\
 	tre-match-utils.h	\
 	tre-mem.h		\
 	tre-parse.h		\
-	tre-stack.h		\
-	xmalloc.h
+	tre-stack.h
 
 libtre_la_SOURCES =		\
 	tre-ast.c		\

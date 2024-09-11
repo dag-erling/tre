@@ -62,9 +62,6 @@ char *alloca ();
 
 #include "tre-internal.h"
 #include "tre-match-utils.h"
-#include "xmalloc.h"
-
-
 
 typedef struct {
   tre_tnfa_transition_t *state;
@@ -167,7 +164,7 @@ tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string, int len,
 #ifdef TRE_USE_ALLOCA
     buf = alloca(total_bytes);
 #else /* !TRE_USE_ALLOCA */
-    buf = xmalloc(total_bytes);
+    buf = malloc(total_bytes);
 #endif /* !TRE_USE_ALLOCA */
     if (buf == NULL)
       return REG_ESPACE;
@@ -212,7 +209,7 @@ tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string, int len,
 	{
 #ifndef TRE_USE_ALLOCA
 	  if (buf)
-	    xfree(buf);
+	    free(buf);
 #endif /* !TRE_USE_ALLOCA */
 	  return REG_NOMATCH;
 	}
@@ -490,7 +487,7 @@ tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string, int len,
 
 #ifndef TRE_USE_ALLOCA
   if (buf)
-    xfree(buf);
+    free(buf);
 #endif /* !TRE_USE_ALLOCA */
 
   *match_end_ofs = match_eo;

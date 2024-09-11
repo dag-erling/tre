@@ -45,8 +45,6 @@ char *alloca ();
 #include <limits.h>
 
 #include "tre-internal.h"
-#include "xmalloc.h"
-
 
 /* Fills the POSIX.2 regmatch_t array according to the TNFA tag and match
    endpoint values. */
@@ -147,7 +145,7 @@ tre_match(const tre_tnfa_t *tnfa, const void *string, size_t len,
 #ifdef TRE_USE_ALLOCA
       tags = alloca(sizeof(*tags) * tnfa->num_tags);
 #else /* !TRE_USE_ALLOCA */
-      tags = xmalloc(sizeof(*tags) * tnfa->num_tags);
+      tags = malloc(sizeof(*tags) * tnfa->num_tags);
 #endif /* !TRE_USE_ALLOCA */
       if (tags == NULL)
 	return REG_ESPACE;
@@ -166,7 +164,7 @@ tre_match(const tre_tnfa_t *tnfa, const void *string, size_t len,
 		 capabilities from the input stream. */
 #ifndef TRE_USE_ALLOCA
 	      if (tags)
-		xfree(tags);
+		free(tags);
 #endif /* !TRE_USE_ALLOCA */
 	      return REG_BADPAT;
 	    }
@@ -199,7 +197,7 @@ tre_match(const tre_tnfa_t *tnfa, const void *string, size_t len,
     tre_fill_pmatch(nmatch, pmatch, tnfa->cflags, tnfa, tags, eo);
 #ifndef TRE_USE_ALLOCA
   if (tags)
-    xfree(tags);
+    free(tags);
 #endif /* !TRE_USE_ALLOCA */
   return status;
 }
@@ -306,7 +304,7 @@ tre_match_approx(const tre_tnfa_t *tnfa, const void *string, size_t len,
 #if TRE_USE_ALLOCA
       tags = alloca(sizeof(*tags) * tnfa->num_tags);
 #else /* !TRE_USE_ALLOCA */
-      tags = xmalloc(sizeof(*tags) * tnfa->num_tags);
+      tags = malloc(sizeof(*tags) * tnfa->num_tags);
 #endif /* !TRE_USE_ALLOCA */
       if (tags == NULL)
 	return REG_ESPACE;
@@ -317,7 +315,7 @@ tre_match_approx(const tre_tnfa_t *tnfa, const void *string, size_t len,
     tre_fill_pmatch(match->nmatch, match->pmatch, tnfa->cflags, tnfa, tags, eo);
 #ifndef TRE_USE_ALLOCA
   if (tags)
-    xfree(tags);
+    free(tags);
 #endif /* !TRE_USE_ALLOCA */
   return status;
 }

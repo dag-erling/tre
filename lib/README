@@ -1,9 +1,5 @@
 This code is structured roughly as follows:
 
-xmalloc.c:
-  - Wrappers for the malloc() functions, for error generation and
-    memory leak checking purposes.
-
 tre-mem.c:
   - A simple and efficient memory allocator.
 
