@@ -10,23 +10,6 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#ifdef TRE_USE_ALLOCA
-/* AIX requires this to be the first thing in the file.	 */
-#ifndef __GNUC__
-# if HAVE_ALLOCA_H
-#  include <alloca.h>
-# else
-#  ifdef _AIX
- #pragma alloca
-#  else
-#   ifndef alloca /* predefined by HP cc +Olibcalls */
-char *alloca ();
-#   endif
-#  endif
-# endif
-#endif
-#endif /* TRE_USE_ALLOCA */
-
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -142,11 +125,7 @@ tre_match(const tre_tnfa_t *tnfa, const void *string, size_t len,
   int *tags = NULL, eo;
   if (tnfa->num_tags > 0 && nmatch > 0)
     {
-#ifdef TRE_USE_ALLOCA
-      tags = alloca(sizeof(*tags) * tnfa->num_tags);
-#else /* !TRE_USE_ALLOCA */
       tags = malloc(sizeof(*tags) * tnfa->num_tags);
-#endif /* !TRE_USE_ALLOCA */
       if (tags == NULL)
 	return REG_ESPACE;
     }
@@ -162,10 +141,8 @@ tre_match(const tre_tnfa_t *tnfa, const void *string, size_t len,
 	    {
 	      /* The backtracking matcher requires rewind and compare
 		 capabilities from the input stream. */
-#ifndef TRE_USE_ALLOCA
 	      if (tags)
 		free(tags);
-#endif /* !TRE_USE_ALLOCA */
 	      return REG_BADPAT;
 	    }
 	}
@@ -195,10 +172,8 @@ tre_match(const tre_tnfa_t *tnfa, const void *string, size_t len,
   if (status == REG_OK)
     /* A match was found, so fill the submatch registers. */
     tre_fill_pmatch(nmatch, pmatch, tnfa->cflags, tnfa, tags, eo);
-#ifndef TRE_USE_ALLOCA
   if (tags)
     free(tags);
-#endif /* !TRE_USE_ALLOCA */
   return status;
 }
 
@@ -301,11 +276,7 @@ tre_match_approx(const tre_tnfa_t *tnfa, const void *string, size_t len,
 
   if (tnfa->num_tags > 0 && match->nmatch > 0)
     {
-#if TRE_USE_ALLOCA
-      tags = alloca(sizeof(*tags) * tnfa->num_tags);
-#else /* !TRE_USE_ALLOCA */
       tags = malloc(sizeof(*tags) * tnfa->num_tags);
-#endif /* !TRE_USE_ALLOCA */
       if (tags == NULL)
 	return REG_ESPACE;
     }
@@ -313,10 +284,8 @@ tre_match_approx(const tre_tnfa_t *tnfa, const void *string, size_t len,
 			       match, params, eflags, &eo);
   if (status == REG_OK)
     tre_fill_pmatch(match->nmatch, match->pmatch, tnfa->cflags, tnfa, tags, eo);
-#ifndef TRE_USE_ALLOCA
   if (tags)
     free(tags);
-#endif /* !TRE_USE_ALLOCA */
   return status;
 }
 

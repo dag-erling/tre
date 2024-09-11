@@ -27,23 +27,6 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#ifdef TRE_USE_ALLOCA
-/* AIX requires this to be the first thing in the file.	 */
-#ifndef __GNUC__
-# if HAVE_ALLOCA_H
-#  include <alloca.h>
-# else
-#  ifdef _AIX
- #pragma alloca
-#  else
-#   ifndef alloca /* predefined by HP cc +Olibcalls */
-char *alloca ();
-#   endif
-#  endif
-# endif
-#endif
-#endif /* TRE_USE_ALLOCA */
-
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -161,11 +144,7 @@ tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string, int len,
       + (rbytes + xbytes * tnfa->num_states) * 2 + tbytes + pbytes;
 
     /* Allocate the memory. */
-#ifdef TRE_USE_ALLOCA
-    buf = alloca(total_bytes);
-#else /* !TRE_USE_ALLOCA */
     buf = malloc(total_bytes);
-#endif /* !TRE_USE_ALLOCA */
     if (buf == NULL)
       return REG_ESPACE;
     memset(buf, 0, total_bytes);
@@ -207,10 +186,8 @@ tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string, int len,
 	str_byte = strchr(orig_str, first);
       if (str_byte == NULL)
 	{
-#ifndef TRE_USE_ALLOCA
 	  if (buf)
 	    free(buf);
-#endif /* !TRE_USE_ALLOCA */
 	  return REG_NOMATCH;
 	}
       DPRINT(("skipped %lu chars\n", (unsigned long)(str_byte - orig_str)));
@@ -485,10 +462,8 @@ tre_tnfa_run_parallel(const tre_tnfa_t *tnfa, const void *string, int len,
 
   DPRINT(("match end offset = %d\n", match_eo));
 
-#ifndef TRE_USE_ALLOCA
   if (buf)
     free(buf);
-#endif /* !TRE_USE_ALLOCA */
 
   *match_end_ofs = match_eo;
   return match_eo >= 0 ? REG_OK : REG_NOMATCH;

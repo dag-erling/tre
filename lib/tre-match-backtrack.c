@@ -34,23 +34,6 @@
 #include <config.h>
 #endif /* HAVE_CONFIG_H */
 
-#ifdef TRE_USE_ALLOCA
-/* AIX requires this to be the first thing in the file.	 */
-#ifndef __GNUC__
-# if HAVE_ALLOCA_H
-#  include <alloca.h>
-# else
-#  ifdef _AIX
- #pragma alloca
-#  else
-#   ifndef alloca /* predefined by HP cc +Olibcalls */
-char *alloca ();
-#   endif
-#  endif
-# endif
-#endif
-#endif /* TRE_USE_ALLOCA */
-
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -109,17 +92,10 @@ typedef struct tre_backtrack_struct {
 #endif /* !TRE_MBSTATE */
 
 
-#ifdef TRE_USE_ALLOCA
-#define tre_bt_mem_new		  tre_mem_newa
-#define tre_bt_mem_alloc	  tre_mem_alloca
-#define tre_bt_mem_destroy(obj)	  do { } while (0)
-#define xafree(obj)		  do { } while (0) /* do nothing, obj was obtained with alloca() */
-#else /* !TRE_USE_ALLOCA */
 #define tre_bt_mem_new		  tre_mem_new
 #define tre_bt_mem_alloc	  tre_mem_alloc
 #define tre_bt_mem_destroy	  tre_mem_destroy
 #define xafree(obj)		  free(obj)
-#endif /* !TRE_USE_ALLOCA */
 
 
 #define BT_STACK_PUSH(_pos, _str_byte, _str_wide, _state, _state_id, _next_c, _tags, _mbstate) \
@@ -265,11 +241,6 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
   DPRINT(("tnfa_execute_backtrack, input type %d\n", type));
   DPRINT(("len = %d\n", len));
 
-#ifdef TRE_USE_ALLOCA
-  tags = alloca(sizeof(*tags) * tnfa->num_tags);
-  pmatch = alloca(sizeof(*pmatch) * tnfa->num_submatches);
-  states_seen = alloca(sizeof(*states_seen) * tnfa->num_states);
-#else /* !TRE_USE_ALLOCA */
   if (tnfa->num_tags)
     {
       tags = malloc(sizeof(*tags) * tnfa->num_tags);
@@ -297,7 +268,6 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
 	  goto error_exit;
 	}
     }
-#endif /* !TRE_USE_ALLOCA */
 
  retry:
   {
@@ -653,14 +623,12 @@ tre_tnfa_run_backtrack(const tre_tnfa_t *tnfa, const void *string,
 
  error_exit:
   tre_bt_mem_destroy(mem);
-#ifndef TRE_USE_ALLOCA
   if (tags)
     xafree(tags);
   if (pmatch)
     xafree(pmatch);
   if (states_seen)
     xafree(states_seen);
-#endif /* !TRE_USE_ALLOCA */
 
   return ret;
 }

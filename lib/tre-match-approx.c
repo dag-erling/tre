@@ -11,21 +11,6 @@
 #endif /* HAVE_CONFIG_H */
 
 /* AIX requires this to be the first thing in the file.	 */
-#ifdef TRE_USE_ALLOCA
-#ifndef __GNUC__
-# if HAVE_ALLOCA_H
-#  include <alloca.h>
-# else
-#  ifdef _AIX
- #pragma alloca
-#  else
-#   ifndef alloca /* predefined by HP cc +Olibcalls */
-char *alloca ();
-#   endif
-#  endif
-# endif
-#endif
-#endif /* TRE_USE_ALLOCA */
 
 #include <assert.h>
 #include <stdlib.h>
@@ -272,11 +257,7 @@ tre_tnfa_run_approx(const tre_tnfa_t *tnfa, const void *string, int len,
     total_bytes += (sizeof(long) - 1) * 3;
 
     /* Allocate the memory. */
-#ifdef TRE_USE_ALLOCA
-    buf = alloca(total_bytes);
-#else /* !TRE_USE_ALLOCA */
     buf = malloc((unsigned)total_bytes);
-#endif /* !TRE_USE_ALLOCA */
     if (!buf)
       return REG_ESPACE;
     memset(buf, 0, (size_t)total_bytes);
@@ -792,10 +773,8 @@ tre_tnfa_run_approx(const tre_tnfa_t *tnfa, const void *string, int len,
   DPRINT(("match end offset = %d, match cost = %d\n", match_eo,
 	  match_costs[TRE_M_COST]));
 
-#ifndef TRE_USE_ALLOCA
   if (buf)
     free(buf);
-#endif /* !TRE_USE_ALLOCA */
 
   match->cost = match_costs[TRE_M_COST];
   match->num_ins = match_costs[TRE_M_NUM_INS];

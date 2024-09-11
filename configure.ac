@@ -104,23 +104,6 @@ AC_USE_SYSTEM_EXTENSIONS
 dnl Make sure locally configured headers are used (this adds the #define to config.h).
 AC_DEFINE(USE_LOCAL_TRE_H, 1, [ Define to ensure locally configured headers are used ])
 
-AC_ARG_WITH(alloca,
-  AS_HELP_STRING(
-    [--without-alloca],
-    [don't use alloca  @<:@default=use@:>@]),
-  [ tre_use_alloca="$withval" ],
-  [ tre_use_alloca="yes" ])
-if test "$tre_use_alloca" = "yes"; then
-  ALLOCA=""
-  AC_FUNC_ALLOCA
-  if test -z "$ALLOCA"; then
-    # alloca() works.
-    AC_DEFINE(TRE_USE_ALLOCA, 1,
-      [ Define if you want TRE to use alloca() instead of malloc() when
-        allocating memory needed for regexec operations. ])
-  fi
-fi
-
 AC_ARG_ENABLE(system-abi,
   AS_HELP_STRING(
     [--enable-system-abi],
@@ -560,7 +543,6 @@ TRE is now configured as follows:
   LD       = $LD
   LDFLAGS  = $LDFLAGS
   LIBS     = $LIBS
-  Use alloca():                       $tre_use_alloca
 
 * TRE options
 
