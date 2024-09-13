@@ -209,6 +209,7 @@ main(int argc, char **argv)
       len = len + (max_len/steps);
       free(str);
     }
+    tre_regfree(&reobj);
     break;
 
 
@@ -229,6 +230,7 @@ main(int argc, char **argv)
       len = len + (max_len/steps);
       free(str);
     }
+    tre_regfree(&reobj);
     break;
 
 
@@ -248,6 +250,7 @@ main(int argc, char **argv)
       len = len + (max_len/steps);
       free(str);
     }
+    tre_regfree(&reobj);
     break;
 
   case 3:
@@ -268,6 +271,7 @@ main(int argc, char **argv)
       len = len + (max_len/steps);
       free(str);
     }
+    tre_regfree(&reobj);
     break;
 
   case 4:
@@ -329,6 +333,7 @@ main(int argc, char **argv)
       len = len + (max_len/steps);
       free(str);
     }
+    tre_regfree(&reobj);
     break;
 
 
@@ -355,6 +360,7 @@ main(int argc, char **argv)
       len = len + (max_len/steps);
       free(str);
     }
+    tre_regfree(&reobj);
     break;
 
 
@@ -385,6 +391,7 @@ main(int argc, char **argv)
       len = len + (max_len/steps);
       free(str);
     }
+    tre_regfree(&reobj);
     break;
 
 
@@ -417,6 +424,7 @@ main(int argc, char **argv)
       len = len + (max_len/steps);
       free(str);
     }
+    tre_regfree(&reobj);
     break;
 
 
@@ -435,20 +443,13 @@ main(int argc, char **argv)
       for (i = 0; i < samples; i++) {
 	c1 = clock();
 	for (j = 0; j < repeats; j++) {
-	  char *s;
-	  int l;
-
-	  s = str;
-	  l = 0;
-
-
-	  while (*s /* TBR added * */ != '\0') {
-	    if (*s == 'a') {
-	      s++;
-	      l++;
-	    } else
+	  unsigned long l = 0;
+	  for (char *s = str; *s != '\0'; s++) {
+	    if (*s != 'a')
 	      break;
+	    l++;
 	  }
+	  (void)l;
 	}
       	c2 = clock();
 	sample_data[i] = (double)(c2-c1)/(CLOCKS_PER_SEC*repeats);
@@ -471,8 +472,6 @@ main(int argc, char **argv)
     printf("Pelle.\n");
     return 1;
   }
-
-  tre_regfree(&reobj);
 
   return 0;
 }
