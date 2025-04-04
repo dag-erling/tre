@@ -1463,57 +1463,107 @@ tre_parse(tre_parse_ctx_t *ctx)
 					       ASSERT_AT_EOW);
 		  ctx->re++;
 		  break;
-		case L'x':
+		case L'o':
 		  ctx->re++;
-		  if (ctx->re[0] != CHAR_LBRACE && ctx->re < ctx->re_end)
+		  if (ctx->re[0] != CHAR_LBRACE)
 		    {
-		      /* 8 bit hex char. */
-		      char tmp[3] = {0, 0, 0};
-		      long val;
-		      DPRINT(("tre_parse:  8 bit hex: '%.*" STRF "'\n",
+		      unsigned long val = 0;
+		      unsigned int digit;
+		      DPRINT(("tre_parse:  8 bit oct: '%.*" STRF "'\n",
 			      REST(ctx->re - 2)));
-
-		      if (tre_isxdigit(ctx->re[0]) && ctx->re < ctx->re_end)
+		      while (ctx->re < ctx->re_end)
 			{
-			  tmp[0] = (char)ctx->re[0];
+			  if (ctx->re[0] >= L'0' && ctx->re[0] <= L'7')
+			    digit = ctx->re[0] - L'0';
+			  else
+			    break;
 			  ctx->re++;
+			  if (val > 0xff >> 3)
+			    return REG_EBRACE;
+			  val = val << 3 | digit;
 			}
-		      if (tre_isxdigit(ctx->re[0]) && ctx->re < ctx->re_end)
-			{
-			  tmp[1] = (char)ctx->re[0];
-			  ctx->re++;
-			}
-		      val = strtol(tmp, NULL, 16);
 		      result = tre_ast_new_literal(ctx->mem, (int)val, (int)val);
 		      break;
 		    }
-		  else if (ctx->re < ctx->re_end)
+		  else
 		    {
 		      /* Wide char. */
-		      char tmp[9]; /* max 8 hex digits + terminator */
-		      long val;
-		      size_t i = 0;
-		      ctx->re++;
-		      while (ctx->re_end - ctx->re >= 0)
+		      unsigned long val = 0;
+		      unsigned int digit;
+		      ctx->re++; // opening brace
+		      while (ctx->re < ctx->re_end)
 			{
 			  if (ctx->re[0] == CHAR_RBRACE)
 			    break;
-			  if (tre_isxdigit(ctx->re[0]) && i < sizeof(tmp) - 1)
-			    {
-			      tmp[i] = (char)ctx->re[0];
-			      i++;
-			      ctx->re++;
-			      continue;
-			    }
-			  return REG_EBRACE;
+			  else if (ctx->re[0] >= L'0' && ctx->re[0] <= L'7')
+			    digit = ctx->re[0] - L'0';
+			  else
+			    return REG_EBRACE;
+			  ctx->re++;
+			  if (val > 0xffffffffU >> 3)
+			    return REG_EBRACE;
+			  val = val << 3 | digit;
 			}
-		      ctx->re++;
-		      tmp[i] = 0;
-		      val = strtol(tmp, NULL, 16);
+		      ctx->re++; // closing brace
 		      result = tre_ast_new_literal(ctx->mem, (int)val, (int)val);
 		      break;
 		    }
-		  /*FALLTHROUGH*/
+		  break;
+		case L'x':
+		  ctx->re++;
+		  if (ctx->re[0] != CHAR_LBRACE)
+		    {
+		      /* 8 bit hex char. */
+		      unsigned long val = 0;
+		      unsigned int digit;
+		      DPRINT(("tre_parse:  8 bit hex: '%.*" STRF "'\n",
+			      REST(ctx->re - 2)));
+		      while (ctx->re < ctx->re_end)
+			{
+			  if (ctx->re[0] >= L'0' && ctx->re[0] <= L'9')
+			      digit = ctx->re[0] - L'0';
+			  else if (ctx->re[0] >= L'A' && ctx->re[0] <= L'F')
+			      digit = ctx->re[0] - L'A';
+			  else if (ctx->re[0] >= L'a' && ctx->re[0] <= L'f')
+			      digit = ctx->re[0] - L'a';
+			  else
+			    break;
+			  ctx->re++;
+			  if (val > 0xff >> 4)
+			    return REG_EBRACE;
+			  val = val << 4 | digit;
+			}
+		      result = tre_ast_new_literal(ctx->mem, (int)val, (int)val);
+		      break;
+		    }
+		  else
+		    {
+		      /* Wide char. */
+		      unsigned long val = 0;
+		      unsigned int digit;
+		      ctx->re++; // opening brace
+		      while (ctx->re < ctx->re_end)
+			{
+			  if (ctx->re[0] == CHAR_RBRACE)
+			    break;
+			  else if (ctx->re[0] >= L'0' && ctx->re[0] <= L'9')
+			      digit = ctx->re[0] - L'0';
+			  else if (ctx->re[0] >= L'A' && ctx->re[0] <= L'F')
+			      digit = ctx->re[0] - L'A';
+			  else if (ctx->re[0] >= L'a' && ctx->re[0] <= L'f')
+			      digit = ctx->re[0] - L'a';
+			  else
+			    return REG_EBRACE;
+			  ctx->re++;
+			  if (val > 0xffffffffU >> 4)
+			    return REG_EBRACE;
+			  val = val << 4 | digit;
+			}
+		      ctx->re++; // closing brace
+		      result = tre_ast_new_literal(ctx->mem, (int)val, (int)val);
+		      break;
+		    }
+		  break;
 
 		default:
 		  if (tre_isdigit(*ctx->re))
