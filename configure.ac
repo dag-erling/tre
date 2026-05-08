@@ -19,18 +19,13 @@ AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SSIZE_T
 
-tre_version_1=`echo $PACKAGE_VERSION | cut -d . -f 1`
-tre_version_2=`echo $PACKAGE_VERSION | cut -d . -f 2`
-tre_version_3=`echo $PACKAGE_VERSION | cut -d . -f 3`
-tre_version=$tre_version_1.$tre_version_2.$tre_version_3
-AC_DEFINE_UNQUOTED(TRE_VERSION,  "$tre_version",  [ TRE version string.  ])
-AC_DEFINE_UNQUOTED(TRE_VERSION_1, $tre_version_1, [ TRE version level 1. ])
-AC_DEFINE_UNQUOTED(TRE_VERSION_2, $tre_version_2, [ TRE version level 2. ])
-AC_DEFINE_UNQUOTED(TRE_VERSION_3, $tre_version_3, [ TRE version level 3. ])
-AC_SUBST(TRE_VERSION, $tre_version)
-AC_SUBST(TRE_VERSION_1, $tre_version_1)
-AC_SUBST(TRE_VERSION_2, $tre_version_2)
-AC_SUBST(TRE_VERSION_3, $tre_version_3)
+AC_DEFINE_UNQUOTED(TRE_VERSION, "AC_PACKAGE_VERSION", [TRE version])
+echo AC_PACKAGE_VERSION | (
+  IFS=. read major minor patch
+  AC_DEFINE_UNQUOTED(TRE_VERSION_1, [$major], [TRE major version])
+  AC_DEFINE_UNQUOTED(TRE_VERSION_2, [$minor], [TRE minor version])
+  AC_DEFINE_UNQUOTED(TRE_VERSION_3, [$patch], [TRE patch version])
+)
 
 dnl Options
 AC_ARG_ENABLE(profile,
