@@ -1,38 +1,37 @@
-# setup.py - Builds and installs the TRE Python language bindings module
+#!/usr/bin/env python3
+#
+# setup.py - Builds and installs the TRE Python language bindings
 #
 # Copyright (c) 2009 Ville Laurikari <ville@laurikari.net>
+# Copyright (c) 2026 Dag-Erling Smørgrav <des@des.dev>
 #
 
-import distutils.sysconfig
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 import sys
-import os
-import shutil
 
-version = "@TRE_VERSION@"
+package = "@PACKAGE@".lower()
 data_files = []
-include_dirs = ["../include"]
-library_dirs = ["../lib/.libs"]
+cflags = "@CFLAGS@".split()
+include_dirs = ["@top_srcdir@/include"]
+library_dirs = ["@top_builddir@/lib/.libs"]
 libraries = ["tre"]
 
 if sys.platform == "win32":
-    # Place tre.dll in site-packages, next to tre.pyd.
-    data_files = [(distutils.sysconfig.get_python_lib(), ["tre.dll"])]
-    include_dirs += ["../win32"]
-    shutil.copy("../win32/Release/tre.dll", ".")
+    data_files = ["@top_builddir@/win32/Release/tre.dll"]
     libraries = ["../win32/Release/tre"]
 
-setup(name = "tre",
-      version = version,
+setup(name = package,
+      version = "@VERSION@",
       description = "Python module for TRE",
       author = "Ville Laurikari",
-      author_email = "ville@laurikari.net",
+      author_email = "@PACKAGE_BUGREPORT@",
       license = "2-clause BSD",
-      url = "http://laurikari.net/tre/",
+      url = "@PACKAGE_URL@",
       data_files = data_files,
-      ext_modules = [Extension("tre",
+      ext_modules = [Extension(package,
                                sources = ["tre-python.c"],
-                               define_macros = [("HAVE_CONFIG_H", None)],
+                               extra_compile_args = cflags,
+                               define_macros = [("TRE_MODULE", f'"{package}"')],
                                include_dirs = include_dirs,
                                library_dirs = library_dirs,
                                libraries = libraries
