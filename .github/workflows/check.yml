@@ -13,19 +13,25 @@ jobs:
         sudo locale-gen
         sudo update-locale LANG=en_US.UTF-8
         sudo apt-get update
-        sudo apt-get install -y autoconf automake autopoint gettext libtool
+        sudo apt-get install -y autoconf automake autopoint gettext libtool python3-pip
     - name: Check out
       uses: actions/checkout@v4
     - name: Configure
       run: |
-        ./utils/autogen.sh
-        ./configure --enable-debug
+        autoreconf -vif
+        ./configure --enable-debug --prefix=/tmp/tre
     - name: Build
       run: make
     - name: Run tests
       run: make check
     - name: Run distribution tests
       run: make distcheck
+    - name: Build Python package
+      run: |
+        make install
+        python -m venv /tmp/tre
+        /tmp/tre/bin/pip3 install ./python
+        LD_LIBRARY_PATH=/tmp/tre/lib /tmp/tre/bin/python3 python/example.py
     - name: Upload logs
       if: ${{ failure() }}
       uses: actions/upload-artifact@v4
