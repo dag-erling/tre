@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([TRE], [0.9.0])
+AC_INIT([TRE], [0.9.0], [ville@laurikari.net], [tre], [https://laurikari.net/tre])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([lib/regcomp.c])
 AC_CONFIG_AUX_DIR([utils])
