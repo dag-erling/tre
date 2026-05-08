@@ -35,7 +35,9 @@
    search string gets modified by another thread. */
 /* #define FUTURE_RELEASE_GIL 1 */
 
+#ifndef TRE_MODULE
 #define	TRE_MODULE	"tre"
+#endif
 
 typedef struct {
   PyObject_HEAD
@@ -134,58 +136,27 @@ static PyMemberDef TreFuzzyness_members[] = {
     "Maximum allowed number of inserted characters" },
   { "maxsub", T_INT, offsetof(TreFuzzynessObject, ap.max_subst), 0,
     "Maximum allowed number of substituted characters" },
-  { NULL }
+  { 0 }
 };
 
 static PyTypeObject TreFuzzynessType = {
-  PyVarObject_HEAD_INIT(NULL,0)
-  TRE_MODULE ".Fuzzyness",	/* tp_name */
-  sizeof(TreFuzzynessObject),	/* tp_basicsize */
-  0,			        /* tp_itemsize */
-  /* methods */
-  0,				/* tp_dealloc */
-  0,				/* tp_print */
-  0,				/* tp_getattr */
-  0,				/* tp_setattr */
-  0,				/* tp_compare */
-  TreFuzzyness_repr,		/* tp_repr */
-  0,				/* tp_as_number */
-  0,				/* tp_as_sequence */
-  0,				/* tp_as_mapping */
-  0,				/* tp_hash */
-  0,				/* tp_call */
-  0,				/* tp_str */
-  0,				/* tp_getattro */
-  0,				/* tp_setattro */
-  0,				/* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT,		/* tp_flags */
-  /* tp_doc */
-  TRE_MODULE ".fuzzyness object holds approximation parameters for match",
-  0,				/* tp_traverse */
-  0,				/* tp_clear */
-  0,				/* tp_richcompare */
-  0,				/* tp_weaklistoffset */
-  0,				/* tp_iter */
-  0,				/* tp_iternext */
-  0,				/* tp_methods */
-  TreFuzzyness_members,		/* tp_members */
-  0,				/* tp_getset */
-  0,				/* tp_base */
-  0,				/* tp_dict */
-  0,				/* tp_descr_get */
-  0,				/* tp_descr_set */
-  0,				/* tp_dictoffset */
-  0,				/* tp_init */
-  0,				/* tp_alloc */
-  TreFuzzyness_new		/* tp_new */
+  PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_name		= TRE_MODULE ".Fuzzyness",
+  .tp_basicsize		= sizeof(TreFuzzynessObject),
+  .tp_repr		= TreFuzzyness_repr,
+  .tp_flags		= Py_TPFLAGS_DEFAULT,
+  .tp_doc		= TRE_MODULE ".Fuzzyness object holds approximation parameters for match",
+  .tp_members		= TreFuzzyness_members,
+  .tp_new		= TreFuzzyness_new,
 };
 
 static PyObject *
-PyTreMatch_groups(TreMatchObject *self, PyObject *dummy)
+PyTreMatch_groups(TreMatchObject *self, PyObject *args)
 {
   PyObject *result;
   size_t i;
 
+  (void)args;
   if (self->am.nmatch < 1)
     {
       Py_INCREF(Py_None);
@@ -255,7 +226,7 @@ static PyMethodDef TreMatch_methods[] = {
   {"groups", (PyCFunction)PyTreMatch_groups, METH_NOARGS,
    "return the tuple of slice tuples for all parenthesized subexpressions "
    "(None for not participated)"},
-  {NULL, NULL}
+  { 0 }
 };
 
 static PyMemberDef TreMatch_members[] = {
@@ -269,7 +240,7 @@ static PyMemberDef TreMatch_members[] = {
     "Number of substitutes in the match" },
   { "fuzzyness", T_OBJECT, offsetof(TreMatchObject, fz), READONLY,
     "Fuzzyness used during match" },
-  { NULL }
+  { 0 }
 };
 
 static void
@@ -296,36 +267,15 @@ static PySequenceMethods TreMatch_as_sequence_methods = {
 };
 
 static PyTypeObject TreMatchType = {
-  PyVarObject_HEAD_INIT(NULL,0)
-  TRE_MODULE ".Match",		/* tp_name */
-  sizeof(TreMatchObject),	/* tp_basicsize */
-  0,			        /* tp_itemsize */
-  /* methods */
-  (destructor)PyTreMatch_dealloc, /* tp_dealloc */
-  0,			        /* tp_print */
-  0,				/* tp_getattr */
-  0,				/* tp_setattr */
-  0,				/* tp_compare */
-  0,				/* tp_repr */
-  0,				/* tp_as_number */
-  &TreMatch_as_sequence_methods,	/* tp_as_sequence */
-  0,				/* tp_as_mapping */
-  0,				/* tp_hash */
-  0,				/* tp_call */
-  0,				/* tp_str */
-  0,				/* tp_getattro */
-  0,				/* tp_setattro */
-  0,				/* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT,		/* tp_flags */
-  TRE_MODULE ".match object holds result of successful match",	/* tp_doc */
-  0,				/* tp_traverse */
-  0,				/* tp_clear */
-  0,				/* tp_richcompare */
-  0,				/* tp_weaklistoffset */
-  0,				/* tp_iter */
-  0,				/* tp_iternext */
-  TreMatch_methods,		/* tp_methods */
-  TreMatch_members		/* tp_members */
+  PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_name		= TRE_MODULE ".Match",
+  .tp_basicsize		= sizeof(TreMatchObject),
+  .tp_dealloc		= (destructor)PyTreMatch_dealloc,
+  .tp_as_sequence	= &TreMatch_as_sequence_methods,
+  .tp_flags		= Py_TPFLAGS_DEFAULT,
+  .tp_doc		= TRE_MODULE ".Match object holds result of successful match",
+  .tp_methods		= TreMatch_methods,
+  .tp_members		= TreMatch_members,
 };
 
 static TreMatchObject *
@@ -476,7 +426,7 @@ PyTrePattern_search(TrePatternObject *self, PyObject *args)
         return(NULL);
     }
   /* Terminate ucs_mstring for paranoia's sake (len _should_ take care of it, but this is cheap, so...). */
-  ucs_mstring[num_codepoints] = 0; 
+  ucs_mstring[num_codepoints] = 0;
   // Introduced by PR#19.
   // The matching process can be slow. So, let other Python threads
   // run in parallel by releasing the GIL. See
@@ -525,15 +475,15 @@ PyTrePattern_search(TrePatternObject *self, PyObject *args)
 
 static PyMethodDef TrePattern_methods[] = {
   { "search", (PyCFunction)PyTrePattern_search, METH_VARARGS,
-    "try to search in the given string, returning " TRE_MODULE ".match object "
+    "try to search in the given string, returning " TRE_MODULE ".Match object "
     "or None on failure" },
-  {NULL, NULL}
+  { 0 }
 };
 
 static PyMemberDef TrePattern_members[] = {
   { "nsub", T_INT, offsetof(TrePatternObject, rgx.re_nsub), READONLY,
     "Number of parenthesized subexpressions in regex" },
-  { NULL }
+  { 0 }
 };
 
 static void
@@ -544,36 +494,14 @@ PyTrePattern_dealloc(TrePatternObject *self)
 }
 
 static PyTypeObject TrePatternType = {
-  PyVarObject_HEAD_INIT(NULL,0)
-  TRE_MODULE ".Pattern",	/* tp_name */
-  sizeof(TrePatternObject),	/* tp_basicsize */
-  0,			        /* tp_itemsize */
-  /* methods */
-  (destructor)PyTrePattern_dealloc, /*tp_dealloc*/
-  0,				/* tp_print */
-  0,				/* tp_getattr */
-  0,				/* tp_setattr */
-  0,				/* tp_compare */
-  0,				/* tp_repr */
-  0,				/* tp_as_number */
-  0,				/* tp_as_sequence */
-  0,				/* tp_as_mapping */
-  0,				/* tp_hash */
-  0,				/* tp_call */
-  0,				/* tp_str */
-  0,				/* tp_getattro */
-  0,				/* tp_setattro */
-  0,				/* tp_as_buffer */
-  Py_TPFLAGS_DEFAULT,		/* tp_flags */
-  TRE_MODULE ".pattern object holds compiled tre regex",	/* tp_doc */
-  0,				/* tp_traverse */
-  0,				/* tp_clear */
-  0,				/* tp_richcompare */
-  0,				/* tp_weaklistoffset */
-  0,				/* tp_iter */
-  0,				/* tp_iternext */
-  TrePattern_methods,		/* tp_methods */
-  TrePattern_members		/* tp_members */
+  PyVarObject_HEAD_INIT(NULL, 0)
+  .tp_name		= TRE_MODULE ".Pattern",
+  .tp_basicsize		= sizeof(TrePatternObject),
+  .tp_dealloc		= (destructor)PyTrePattern_dealloc,
+  .tp_flags		= Py_TPFLAGS_DEFAULT,
+  .tp_doc		= TRE_MODULE ".Pattern object holds compiled tre regex",
+  .tp_methods		= TrePattern_methods,
+  .tp_members		= TrePattern_members,
 };
 
 static TrePatternObject *
@@ -605,6 +533,7 @@ PyTre_ncompile(PyObject *self, PyObject *args)
   Py_UCS1 *ucs_pattern = NULL;
 #endif
 
+  (void)self;
   if (PyTuple_Size(args) > 0 && PyUnicode_Check(PyTuple_GetItem(args, 0)))
     {
       /* First object in tuple is a Unicode object or an instance of a
@@ -702,7 +631,7 @@ PyTre_ncompile(PyObject *self, PyObject *args)
         return(NULL);
     }
   /* Terminate ucs_pattern for paranoia's sake (len _should_ take care of it, but this is cheap, so...). */
-  ucs_pattern[pat_len] = 0; 
+  ucs_pattern[pat_len] = 0;
   // Introduced by PR#19.
   // The compile process can be slow. So, let other Python threads
   // run in parallel by releasing the GIL. See
@@ -732,10 +661,13 @@ PyTre_ncompile(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef tre_methods[] = {
-  { "compile", PyTre_ncompile, METH_VARARGS,
-    "Compile a regular expression pattern, returning a "
-    TRE_MODULE ".pattern object" },
-  {NULL, NULL, 0, NULL}
+  {
+    .ml_name	= "compile",
+    .ml_meth	= PyTre_ncompile,
+    .ml_flags	= METH_VARARGS,
+    .ml_doc	= "Compile a regular expression pattern, returning a " TRE_MODULE ".pattern object"
+  },
+  { 0 }
 };
 
 static struct _tre_flags {
@@ -756,11 +688,10 @@ static struct _tre_flags {
 static struct PyModuleDef cModPyTRE =
 {
   PyModuleDef_HEAD_INIT,
-  "tre",            /* Name of module. */
-  "Python module for TRE library\n\nModule exports "
-  "the only function: compile", /* Module documentation, may be NULL. */
-  -1,               /* Size of per-interpreter state of the module, or -1 if the module keeps state in global vars. */
-  tre_methods
+  .m_name		= "tre",
+  .m_doc		= "Python module for TRE library\n\nModule exports the only function: compile",
+  .m_size		= -1, /* no per-interpreter state */
+  .m_methods		= tre_methods,
 };
 
 PyMODINIT_FUNC
